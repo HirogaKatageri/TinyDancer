@@ -1,53 +1,74 @@
-apply plugin: "com.android.application"
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+apply from: '../buildSystem/versions.gradle'
+apply from: '../buildSystem/dependencies.gradle'
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
+    compileSdkVersion project.compile_sdk_version
 
     defaultConfig {
-        applicationId "com.codemonkeylabs.fpslibrary.sample"
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
-    }
-
-    signingConfigs {
-        debug {
-            storeFile file("./debug.keystore")
-            storePassword "android"
-            keyAlias "androiddebugkey"
-            keyPassword "android"
-        }
+        applicationId "com.hirogakatageri.tinydancer"
+        minSdkVersion project.min_sdk_version
+        targetSdkVersion project.target_sdk_version
+        versionCode project.version_code
+        versionName project.version_name
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-            signingConfig signingConfigs.debug
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
-    lintOptions {
-        disable "InvalidPackage"
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    dynamicFeatures = []
+
+    kapt {
+        correctErrorTypes = true
+    }
+
+    buildFeatures {
+        viewBinding = true
+    }
+
+    project.android.buildTypes.all { buildType ->
+        buildType.javaCompileOptions.annotationProcessorOptions.arguments =
+                [
+                        logEpoxyTimings              : "true",
+                        enableParallelEpoxyProcessing: "true"
+                ]
     }
 }
 
 dependencies {
-    debugCompile project(":tinydancer")
-    releaseCompile project(":tinydancer-noop")
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation library.kotlin_jdk
+    implementation library.appcompat
 
-    compile deps.appcompatv7
-    compile deps.supportDesign
-    compile deps.recyclerviewv7
-    compile deps.butterknife
-    compile deps.dagger
+    debugImplementation project(":tinydancer")
+    releaseImplementation project(":tinydancer-noop")
 
-    annotationProcessor deps.daggerCompiler
+    //Android UI
+    implementation library.material
+    implementation library.recyclerview
+    implementation library.cardview
+    implementation library.constraint_layout
 
-    provided deps.javaxAnnotation
+    //Core
+    implementation library.koin_android
+    implementation library.koin_android_scope
+    implementation library.koin_android_viewmodel
+    implementation library.epoxy
+    kapt library.epoxy_processor
 
-    testCompile project(":tinydancer-noop")
+    //Logging
+    implementation library.timberkt
 }
-
