@@ -17,17 +17,19 @@ class TinyDancer {
     private lateinit var fpsFrameCallback: FPSFrameCallback
 
     fun show(context: Context) {
-        if (isInitialized && isOverlayAllowed(context)) tinyCoach.show()
-        else if (!isInitialized) {
-            config = FPSConfig()
-            tinyCoach = TinyCoach(context.applicationContext as Application, config)
-            fpsFrameCallback = FPSFrameCallback(config, tinyCoach)
+        if (isOverlayAllowed(context)) {
+            if (isInitialized) tinyCoach.show()
+            else {
+                config = FPSConfig()
+                tinyCoach = TinyCoach(context.applicationContext as Application, config)
+                fpsFrameCallback = FPSFrameCallback(config, tinyCoach)
 
-            Choreographer.getInstance().postFrameCallback(fpsFrameCallback)
+                Choreographer.getInstance().postFrameCallback(fpsFrameCallback)
+            }
         }
     }
 
-    internal fun isOverlayAllowed(context: Context): Boolean =
+    private fun isOverlayAllowed(context: Context): Boolean =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             Settings.canDrawOverlays(context).also { isAllowed ->
                 if (!isAllowed) Intent(
@@ -45,21 +47,8 @@ class TinyDancer {
 
         private lateinit var tinyDancer: TinyDancer
 
-        fun create(application: Application): TinyDancer {
+        fun create(): TinyDancer {
             tinyDancer = TinyDancer()
-
-            if (tinyDancer.isOverlayAllowed(application)) {
-                tinyDancer.apply {
-                    config = FPSConfig()
-                    tinyCoach = TinyCoach(application, config)
-                    fpsFrameCallback = FPSFrameCallback(config, tinyCoach)
-                }
-
-                Choreographer.getInstance().postFrameCallback(tinyDancer.fpsFrameCallback)
-
-                tinyDancer.isInitialized = true
-            } else tinyDancer
-
             return tinyDancer
         }
     }

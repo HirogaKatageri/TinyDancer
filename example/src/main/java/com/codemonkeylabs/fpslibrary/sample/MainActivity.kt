@@ -14,7 +14,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
-    private val tinyDancer by lazy { TinyDancer.Builder.create(application) }
+    private val tinyDancer by lazy { TinyDancer.Builder.create() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

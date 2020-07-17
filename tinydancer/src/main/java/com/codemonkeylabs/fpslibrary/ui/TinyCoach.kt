@@ -84,7 +84,7 @@ class TinyCoach(context: Application?, private val fpsConfig: FPSConfig) {
         } else {
             meterView.setBackgroundResource(R.drawable.fpsmeterring_good)
         }
-        meterView.text = "${answer.value}"
+        meterView.text = "${answer.value.toInt()}"
     }
 
     fun destroy() {
@@ -124,7 +124,7 @@ class TinyCoach(context: Application?, private val fpsConfig: FPSConfig) {
         meterView = LayoutInflater.from(context).inflate(R.layout.meter_view, null) as TextView
 
         //set initial fps value....might change...
-        meterView.text = "${fpsConfig.refreshRate}"
+        meterView.text = "${fpsConfig.refreshRate.toInt()}"
 
         // grab window manager and add view to the window
         windowManager = meterView.context.getSystemService(Service.WINDOW_SERVICE) as WindowManager
