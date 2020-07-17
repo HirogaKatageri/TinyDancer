@@ -11,34 +11,31 @@ import com.codemonkeylabs.fpslibrary.ui.TinyCoach
 
 class TinyDancer {
 
+    private var isInitialized = false
     private lateinit var config: FPSConfig
     private lateinit var tinyCoach: TinyCoach
     private lateinit var fpsFrameCallback: FPSFrameCallback
 
     fun show(context: Context) {
-        if (overlayPermRequest(context)) {
-            //once permission is granted then you must call show() again
-            return
-        }
+        if (isInitialized && isOverlayAllowed(context)) tinyCoach.show()
+        else if (!isInitialized) {
+            config = FPSConfig()
+            tinyCoach = TinyCoach(context.applicationContext as Application, config)
+            fpsFrameCallback = FPSFrameCallback(config, tinyCoach)
 
-        tinyCoach.show()
+            Choreographer.getInstance().postFrameCallback(fpsFrameCallback)
+        }
     }
 
-    private fun overlayPermRequest(context: Context): Boolean {
-        var permNeeded = false
+    internal fun isOverlayAllowed(context: Context): Boolean =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (!Settings.canDrawOverlays(context)) {
-                val intent = Intent(
+            Settings.canDrawOverlays(context).also { isAllowed ->
+                if (!isAllowed) Intent(
                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:" + context.packageName)
-                )
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                context.startActivity(intent)
-                permNeeded = true
+                    Uri.parse("package:${context.packageName}")
+                ).let { context.startActivity(it) }
             }
-        }
-        return permNeeded
-    }
+        } else true
 
     fun hide() {
         tinyCoach.hide(false)
@@ -51,13 +48,18 @@ class TinyDancer {
         fun create(application: Application): TinyDancer {
             tinyDancer = TinyDancer()
 
-            tinyDancer.apply {
-                config = FPSConfig()
-                tinyCoach = TinyCoach(application, config)
-                fpsFrameCallback = FPSFrameCallback(config, tinyCoach)
-            }
+            if (tinyDancer.isOverlayAllowed(application)) {
+                tinyDancer.apply {
+                    config = FPSConfig()
+                    tinyCoach = TinyCoach(application, config)
+                    fpsFrameCallback = FPSFrameCallback(config, tinyCoach)
+                }
 
-            Choreographer.getInstance().postFrameCallback(tinyDancer.fpsFrameCallback)
+                Choreographer.getInstance().postFrameCallback(tinyDancer.fpsFrameCallback)
+
+                tinyDancer.isInitialized = true
+            } else tinyDancer
+
             return tinyDancer
         }
     }

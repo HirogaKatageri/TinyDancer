@@ -31,9 +31,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupRadioGroup()
-        tinyDancer.show()
 
-        start.setOnClickListener { tinyDancer.show() }
+        start.setOnClickListener { tinyDancer.show(this) }
         stop.setOnClickListener { tinyDancer.hide() }
     }
 
