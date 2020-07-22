@@ -40,7 +40,8 @@ class TinyDancer {
         } else true
 
     fun hide() {
-        tinyCoach.hide(false)
+        if (::tinyCoach.isInitialized)
+            tinyCoach.hide(false)
     }
 
     object Builder {
